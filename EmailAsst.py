@@ -1,11 +1,13 @@
 import os
+import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
 load_dotenv()
-# load user_prefs and system_prefs variables from Prefs.json file
-
-
+with open("Prefs.json", "r", encoding="utf-8") as f:
+  prefs = json.load(f)
+  user_prefs = prefs.get("user_prefs", {})
+  system_prefs = prefs.get("system_prefs", {})
 
 
 def generate(message):
@@ -13,9 +15,9 @@ def generate(message):
   model = genai.GenerativeModel(model_name="gemini-1.5-flash")
   
   prompt = """
-    You are a personal email assistant. Your job is to know my priorities, preferences and requirements about my email and filter out the content and display it to me in the set format.\n\n
+    You are a personal email assistant. Your job is to know the user's priorities, preferences and requirements about their email and filter out the content and display it in the set format.
 
-    #Preferences & Special Instructions: \"I have subscribed to newsletters in my mail. However, they contain sponsored contents. I want you to remove those.\"
+    #User Preferences & Special Instructions: """ + user_prefs + """
 
     The email message is provide in HTML format and the output should be strictly returned in the specified JSON format with no other prefix or suffix. Filter the right content according to my requirements, provide a brief summary of the mail content and categorize the mail. The various categories are: \"Important\", \"NotImportant\", \"Spam\" and \"CannotClasify\"(not enough data in preferences to categorize the mail).
 
@@ -29,9 +31,9 @@ def generate(message):
     \"\"\"""" + message + """\"\"\"
     
     """
-  
+  # print(prompt)
   response = model.generate_content(prompt)
-
+  
   return response.text
 
 def main():
@@ -43,4 +45,5 @@ def main():
 
 
 if __name__=="__main__":
+  # generate("Hello, this is a test message")
   main()
