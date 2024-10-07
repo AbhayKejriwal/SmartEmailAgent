@@ -1,0 +1,14 @@
+Details:
+    Name: 
+    Gender: 
+    Joining Year: 
+    Graduating Year:
+
+Preferences:
+    1. I do not want placement related mails about new companies or students getting selected in companies or any company updates as I am already placed and cannot sit for other companies. However, mails from placement office regarding filling out general information forms might be important as they are for everyone.
+    2. I am not interested in Club Recruitments or Events.
+    3. 
+
+Priorities:
+    1. Mails from HOD ECE or HOD ECM might be important, especially regarding Project-1 or academic credits or NPTEL.
+    2. 
