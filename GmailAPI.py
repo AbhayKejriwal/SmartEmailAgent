@@ -60,10 +60,10 @@ def getEmail(service, message):
 
   return email
 
-def getEmails(labels=[], state=None):
-  # Call the Gmail API
+def listEmails(labels=['INBOX'], state='is:unread'):
   creds = getCredentials() # this line gets the credentials of the user to access the gmail account
-  service = build('gmail', 'v1', credentials=creds) # this line creates a service object that interacts with the Gmail API
+  service = build('gmail', 'v1', credentials=creds)
+  
   if not labels and not state:
     results = service.users().messages().list(userId='me').execute
   elif not state:
@@ -74,12 +74,16 @@ def getEmails(labels=[], state=None):
     results = service.users().messages().list(userId='me', labelIds=labels, q=state).execute()
 
   messages = results.get('messages', [])
+  return messages
 
+def getEmails(messages):
+  # Call the Gmail API
+  creds = getCredentials() # this line gets the credentials of the user to access the gmail account
+  service = build('gmail', 'v1', credentials=creds) # this line creates a service object that interacts with the Gmail API
   emails = []
   for message in messages:
     email = getEmail(service, message)
     emails.append(email)
-
   return emails
 
 def deleteEmail(email):
@@ -188,12 +192,12 @@ def modify_label_color(label_id, text_color, background_color):
 def main():
   labels = ['INBOX']
   state = "is:read"
-  # emails = getEmails(labels, state)
-  # if not emails:
-  #   print("No emails found.")
-  # else:
-  #   for email in emails:
-  #     print(email['Subject'], email['From'])#, email['Message'])
+  emails = getEmails(labels, state)
+  if not emails:
+    print("No emails found.")
+  else:
+    for email in emails:
+      print(email)#['Subject'], email['From'])#, email['Message'])
   #     removeLabels(email, ['Not Important'])
   #     addLabels(email, ['Priority'])
   # create_label("Priority", "#000000", "#cc3a21")
