@@ -3,7 +3,6 @@ import EmailAsst as astn
 import json
 import PySimpleGUI as sg
 import threading
-import time  # Used for simulating processing time
 
 def createInitialLabels():
     ml.create_label("Priority", "#000000", "#cc3a21")
