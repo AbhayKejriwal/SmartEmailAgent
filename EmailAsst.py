@@ -1,5 +1,4 @@
 import os
-import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -8,13 +7,13 @@ with open("Prefs.txt", "r", encoding="utf-8") as f:
   prefs = f.read()
 
 
-def generate(message):
+def generate(email):
   genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
   model = genai.GenerativeModel(model_name="gemini-1.5-flash")
   
-  prompt = """You are a personal email assistant. Your job is to know the user's priorities, preferences and requirements about their email and filter out the content and display it in the set format.
+  prompt = """You are a personal email assistant. Your job is to know the user's details, priorities, preferences and requirements about their email and filter out the content and display it in the set format.
 
-    #User Preferences & Special Instructions: """ + prefs + """
+    #User Details, Preferences & Special Instructions: """ + prefs + """
 
     The email message is provide in HTML format and the output should be strictly returned in the specified JSON format with no other prefix or suffix. Filter the right content according to my requirements, provide a brief summary of the mail content and categorize the mail. The various default categories are: \"Priority\", \"NotImportant\", \"Spam\" and \"CannotClasify\"(not enough data in preferences to categorize the mail).
 
@@ -25,7 +24,7 @@ def generate(message):
     }
 
     EMAIL MESSAGE in HTML format:
-    \"\"\"""" + message + """\"\"\"
+    \"\"\"""" + email + """\"\"\"
     
     """
   # print(prompt)
@@ -37,6 +36,7 @@ def generate(message):
     print(e)
     return None
 
+# Driver and test code
 def main():
   with open("1917a9d2c104454d.html", "r", encoding="utf-8") as f:
     message = f.read()
