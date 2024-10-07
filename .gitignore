@@ -1,7 +1,7 @@
 credentials.json
 .env
-Prefs.json
 *.html
 summary.txt
 __pycache__
 token.json
+Prefs.txt
