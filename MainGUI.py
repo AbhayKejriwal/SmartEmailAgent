@@ -2,6 +2,7 @@ import GmailAPI as ml
 import EmailAsst as astn
 import json
 import PySimpleGUI as sg
+import threading
 
 
 def createInitialLabels():
@@ -22,13 +23,35 @@ def processEmails(emails, window, count, total_emails):
             ml.addLabels(email, [res['Category']])
             if res['Category'] != 'Priority':
                 ml.removeLabels(email, ['INBOX'])
-        
+
         # Update the progress in the GUI
         window['-PROGRESS-'].update(f'Processing: {count}/{total_emails} emails')
         count += 1
 
     return count
 
+
+def fetch_and_filter_emails(window):
+    labels = ['INBOX']  # this line specifies the label of the emails to be read
+    state = "is:unread"  # this line specifies the state of the emails to be read
+    
+    mails = ml.listEmails(labels, state)
+    batch_size = 10
+
+    if not mails:
+        window['-EMAIL_COUNT-'].update("No emails found.")
+    else:
+        total_count = len(mails)
+        window['-EMAIL_COUNT-'].update(f"{total_count} emails found.")
+        
+        count = 1
+        for i in range(0, total_count, batch_size):
+            batch = mails[i:i + batch_size]
+            emails = ml.getEmails(batch)
+            count = processEmails(emails, window, count, total_count)
+
+        window['-EMAIL_COUNT-'].update(f"{total_count} emails processed.")
+        window['-PROGRESS-'].update('Processing Complete!')
 
 
 def main():
@@ -40,7 +63,7 @@ def main():
         [sg.Exit()]
     ]
 
-    window = sg.Window('Email Assistant GUI', layout)
+    window = sg.Window('Email Assistant GUI', layout, finalize=True)
 
     while True:
         event, values = window.read()
@@ -49,28 +72,10 @@ def main():
             break
         
         if event == '-FETCH-':
-            labels = ['INBOX']  # this line specifies the label of the emails to be read
-            state = "is:unread"  # this line specifies the state of the emails to be read
-            
-            mails = ml.listEmails(labels, state)
-            batch_size = 10
-
-            if not mails:
-                window['-EMAIL_COUNT-'].update("No emails found.")
-            else:
-                total_count= len(mails)
-                window['-EMAIL_COUNT-'].update(f"{total_count} emails found.")
-                
-                count = 1
-                for i in range(0, total_count, batch_size):
-                    batch = mails[i:i+batch_size]
-                    emails = ml.getEmails(batch)
-                    count = processEmails(emails, window, count, total_count)
-                else:
-                    window['-EMAIL_COUNT-'].update(f"{total_count} emails processed.")
-                    window['-PROGRESS-'].update('Processing Complete!')
+            threading.Thread(target=fetch_and_filter_emails, args=(window,), daemon=True).start()
 
     window.close()
+
 
 if __name__ == "__main__":
     main()
