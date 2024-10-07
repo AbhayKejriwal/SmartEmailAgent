@@ -3,7 +3,7 @@ import EmailAsst as astn
 import json
 import PySimpleGUI as sg
 import threading
-
+import time  # Used for simulating processing time
 
 def createInitialLabels():
     ml.create_label("Priority", "#000000", "#cc3a21")
@@ -24,12 +24,11 @@ def processEmails(emails, window, count, total_emails):
             if res['Category'] != 'Priority':
                 ml.removeLabels(email, ['INBOX'])
 
-        # Update the progress in the GUI
-        window['-PROGRESS-'].update(f'Processing: {count}/{total_emails} emails')
         count += 1
-
+        
+        # Update the progress in the GUI
+        window.write_event_value('-UPDATE-', (count, total_emails))  # Use event value for GUI update
     return count
-
 
 def fetch_and_filter_emails(window):
     labels = ['INBOX']  # this line specifies the label of the emails to be read
@@ -53,7 +52,6 @@ def fetch_and_filter_emails(window):
         window['-EMAIL_COUNT-'].update(f"{total_count} emails processed.")
         window['-PROGRESS-'].update('Processing Complete!')
 
-
 def main():
     layout = [
         [sg.Text('Email Assistant', font=('Helvetica', 16))],
@@ -67,15 +65,18 @@ def main():
 
     while True:
         event, values = window.read()
-
+        
         if event in (sg.WINDOW_CLOSED, 'Exit'):
             break
         
         if event == '-FETCH-':
             threading.Thread(target=fetch_and_filter_emails, args=(window,), daemon=True).start()
+        
+        if event == '-UPDATE-':
+            count, total_emails = values[event]
+            window['-PROGRESS-'].update(f'Processing: {count}/{total_emails} emails')
 
     window.close()
-
 
 if __name__ == "__main__":
     main()
