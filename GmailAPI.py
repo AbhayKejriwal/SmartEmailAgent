@@ -186,8 +186,8 @@ def modify_label_color(label_id, text_color, background_color):
 
 # Driver and Test code
 def main():
-  # labels = ['INBOX']
-  # state = "is:read"
+  labels = ['INBOX']
+  state = "is:read"
   # emails = getEmails(labels, state)
   # if not emails:
   #   print("No emails found.")
