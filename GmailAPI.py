@@ -49,29 +49,38 @@ def getEmail(service, message):
     if header['name'] == 'From': 
       sender = header['value']
   text = ""
-
-  parts = payload.get('parts')
   
+  parts = payload.get('parts')
+  email = { 'MessageID': message['id'], 'Subject': subject, 'From': sender, 'Message': 'could not get content for the email' }
+  
+  if not parts:
+    #if parts is empty, then the email is not multipart and can be accessed directly
+    parts = [payload]
+
   for part in parts:
     data = part['body'].get('data', '')  # Safely retrieve the value of 'data' key with a default value of an empty string
     byte_code = base64.urlsafe_b64decode(data)
     text = text + byte_code.decode("utf-8")
-  email = { 'MessageID': message['id'], 'Subject': subject, 'From': sender, 'Message': text }
+  email['Message'] = text
 
   return email
 
-def listEmails(labels=['INBOX'], state='is:unread'):
+def listEmails(labels=[], state=''):
   creds = getCredentials() # this line gets the credentials of the user to access the gmail account
   service = build('gmail', 'v1', credentials=creds)
+  
+  label_ids = []
+  for label in labels:
+    label_ids.append(get_label_id(label))
   
   if not labels and not state:
     results = service.users().messages().list(userId='me').execute
   elif not state:
-    results = service.users().messages().list(userId='me', labelIds=labels).execute()
+    results = service.users().messages().list(userId='me', labelIds=label_ids).execute()
   elif not labels:
     results = service.users().messages().list(userId='me', q=state).execute()
   else:
-    results = service.users().messages().list(userId='me', labelIds=labels, q=state).execute()
+    results = service.users().messages().list(userId='me', labelIds=label_ids, q=state).execute()
 
   messages = results.get('messages', [])
   return messages
@@ -191,13 +200,13 @@ def modify_label_color(label_id, text_color, background_color):
 # Driver and Test code
 def main():
   labels = ['INBOX']
-  state = "is:read"
-  emails = getEmails(labels, state)
-  if not emails:
-    print("No emails found.")
-  else:
-    for email in emails:
-      print(email)#['Subject'], email['From'])#, email['Message'])
+  state = "is:unread"
+  # emails = getEmails(labels, state)
+  # if not emails:
+  #   print("No emails found.")
+  # else:
+  #   for email in emails:
+  #     print(email)['Subject'], email['From'])#, email['Message'])
   #     removeLabels(email, ['Not Important'])
   #     addLabels(email, ['Priority'])
   # create_label("Priority", "#000000", "#cc3a21")
