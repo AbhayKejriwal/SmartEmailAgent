@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
-from google.ai.generativelanguage_v1beta.types import content
 
 load_dotenv()
 with open("Prefs.txt", "r", encoding="utf-8") as f:
@@ -46,5 +45,5 @@ def main():
 
 
 if __name__=="__main__":
-  # generate("Hello, this is a test message")
-  main()
+  print(generate("Hello, this is a test message"))
+  # main()
