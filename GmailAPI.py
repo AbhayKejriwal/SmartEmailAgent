@@ -48,10 +48,12 @@ def getEmail(service, message):
       subject = header['value'] 
     if header['name'] == 'From': 
       sender = header['value']
+    if header['name'] == 'Date': 
+      date = header['value']
   text = ""
   
   parts = payload.get('parts')
-  email = { 'MessageID': message['id'], 'Subject': subject, 'From': sender, 'Message': 'could not get content for the email' }
+  email = { 'MessageID': message['id'], 'Subject': subject, 'From': sender, 'Date': date, 'Message': 'could not get content for the email' }
   
   if not parts:
     #if parts is empty, then the email is not multipart and can be accessed directly
@@ -60,7 +62,7 @@ def getEmail(service, message):
   for part in parts:
     data = part['body'].get('data', '')  # Safely retrieve the value of 'data' key with a default value of an empty string
     byte_code = base64.urlsafe_b64decode(data)
-    text = text + byte_code.decode("utf-8")
+    text += byte_code.decode("utf-8")
   email['Message'] = text
 
   return email
