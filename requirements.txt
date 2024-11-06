@@ -1,9 +1,3 @@
-os
-base64
-dotenv
-json
-threading
-datetime
 google.auth.transport.requests
 google.oauth2.credentials
 google_auth_oauthlib.flow
