@@ -54,7 +54,7 @@ The Email Assistant App automates the tedious task of email organization, allowi
 
 ### Download and Setup
 
-1. Download the app's zip file from the releases section and extract it to a location on your computer.
+1. Download the app's zip file from the releases section or directly download the SmartEmailAgent_vX.Y.Z.zip from the repository above and extract it to a location on your computer.
 2. In the extracted folder, you’ll find the executable `.exe` file to run the app, along with configuration files. The executable will only run on Windows 10 and 11. For other OS, you have to follow the developer guide.
 
 ### Setting Up Gmail API Credentials
