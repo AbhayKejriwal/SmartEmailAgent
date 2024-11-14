@@ -1,41 +1,40 @@
-import os.path
+import os
 import base64
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.exceptions import RefreshError
 from googleapiclient.discovery import build
 
 
 def getCredentials():
-  """
-  The `getCredentials` function in Python retrieves and manages user credentials for accessing Gmail
-  using OAuth 2.0 authentication.
-  :return: The `getCredentials` function returns the credentials needed for accessing and managing
-  Gmail using the specified scopes.
-  """
-  creds = None
+    creds = None
+    SCOPES = ['https://mail.google.com/',
+              'https://www.googleapis.com/auth/gmail.labels']
 
-  SCOPES = ['https://mail.google.com/', # this scope allows us to read, write, send, and delete emails
-            'https://www.googleapis.com/auth/gmail.labels'] # this scope allows us to manage labels
+    # Check if token.json exists to load credentials
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
-  # The file token.json stores the user's access and refresh tokens, and is
-  # created automatically when the authorization flow completes for the first time.
-  if os.path.exists('token.json'):
-    creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-
-  # If there are no (valid) credentials available, let the user log in.
-  if not creds or not creds.valid:
+    # Attempt to refresh credentials if expired
     if creds and creds.expired and creds.refresh_token:
-      creds.refresh(Request()) 
-    else:
-      flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-      creds = flow.run_local_server(port=0)
+        try:
+            creds.refresh(Request())
+        except RefreshError:
+            print("Token expired or revoked. Deleting token.json and re-authenticating...")
+            os.remove('token.json')
+            return getCredentials()  # Call the function again to re-authenticate
 
-    # Save the credentials for the next run
-    with open('token.json', 'w') as token:
-      token.write(creds.to_json())
+    # If no valid credentials are available, re-authenticate
+    if not creds or not creds.valid:
+        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        creds = flow.run_local_server(port=0)
 
-  return creds
+        # Save the new credentials for the next run
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+
+    return creds
 
 def getEmail(service, message):
   msg = service.users().messages().get(userId='me', id=message['id']).execute()
