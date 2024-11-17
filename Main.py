@@ -2,6 +2,23 @@ import GmailAPI as ml
 import EmailAsst as astn
 import json
 
+def extract_json(response_text):
+  try:
+    # Attempt to parse JSON from the response
+    return json.loads(response_text)
+  except json.JSONDecodeError as e:
+    print("Failed to parse JSON. Cleaning the response...")
+    # Clean and retry parsing
+    start_index = response_text.find("{")
+    end_index = response_text.rfind("}") + 1
+    if start_index != -1 and end_index != -1:
+      clean_response = response_text[start_index:end_index]
+      try:
+        return json.loads(clean_response)
+      except json.JSONDecodeError:
+        print("Still unable to parse JSON.")
+    return None
+
 def createInitialLabels():
   ml.create_label("Priority", "#000000", "#cc3a21")
   ml.create_label("Not Important", "#000000", "#ffad47")
@@ -21,13 +38,11 @@ def processEmails(emails, count):
     
     try:
       # Parse the JSON string into a dictionary
-      res = json.loads(response)
+      res = extract_json(response)
     except:
-      try:
-        res = json.loads(response)
-      except:
-        print("An error occurred while parsing the response.")
-        continue
+      print(response)
+      print("An error occurred while parsing the response.")
+      continue
     
     email['Summary'] = res['Summary']
     email['Category'] = res['Category'] 
