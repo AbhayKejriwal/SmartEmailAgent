@@ -7,7 +7,7 @@ def extract_json(response_text):
     # Attempt to parse JSON from the response
     return json.loads(response_text)
   except json.JSONDecodeError as e:
-    print("Failed to parse JSON. Cleaning the response...")
+    # print("Failed to parse JSON. Cleaning the response...")
     # Clean and retry parsing
     start_index = response_text.find("{")
     end_index = response_text.rfind("}") + 1
