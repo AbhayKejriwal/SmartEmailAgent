@@ -30,7 +30,14 @@ def generate(email):
   # print(prompt)
   try:
     response = model.generate_content(prompt)
-    return response.text
+    try:
+      return response.text
+    except:        
+      if response and response.candidates:
+        return response.candidates[0].content
+      else:
+        print("No content generated.")
+        return None
   except Exception as e:
     print("Error in generating response.")
     print(e)
