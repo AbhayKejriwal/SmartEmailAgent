@@ -14,7 +14,7 @@ def extract_json(response_text):
         # Attempt to parse JSON from the response
         return json.loads(response_text)
     except json.JSONDecodeError as e:
-        # print("Failed to parse JSON. Cleaning the response...")
+        print("Failed to parse JSON. Cleaning the response...")
         # Clean and retry parsing
         start_index = response_text.find("{")
         end_index = response_text.rfind("}") + 1
@@ -29,6 +29,7 @@ def extract_json(response_text):
 def processEmails(emails, total_count, count, window):
     for email in emails:
         try:
+            print("Generating response: ", email['Subject'])
             response = astn.generate(str(email))
         except:
             try:
@@ -39,6 +40,7 @@ def processEmails(emails, total_count, count, window):
                 continue
         
         try:
+            print("Parsing response: ", email['Subject'])
             res = extract_json(response)  # Parse the JSON string into a dictionary
         except:
             print("An error occurred while parsing the response. Skipping mail.")
@@ -49,9 +51,20 @@ def processEmails(emails, total_count, count, window):
         email['Category'] = res['Category']
 
         if res['Category'] != 'Cannot Classify':
-            ml.addLabels(email, [res['Category']])
+            try:
+                ml.addLabels(email, [res['Category']])
+            except:
+                print("An error occurred while adding labels. Skipping mail.")
+                window['-PROGRESS-'].update('Error occurred while adding labels. Skipping mail.')
+                continue
+            
             if res['Category'] != 'Priority':
-                ml.removeLabels(email, ['INBOX'])
+                try:
+                    ml.removeLabels(email, ['INBOX'])
+                except:
+                    print("An error occurred while removing INBOX label. Skipping mail.")
+                    window['-PROGRESS-'].update('Error occurred while removing INBOX label. Skipping mail.')
+                    continue
         else:
             print("Cannot classify email. Label not added.")
             window['-PROGRESS-'].update('Cannot classify email. Label not added.')
@@ -71,6 +84,7 @@ def batchProcessEmails(mails, total_count, batch_size, window):
         print("Processing", len(batch), "emails.")  # printing the number of emails in the batch
                 
         emails = ml.getEmails(batch)
+        print("Emails fetched. Processing emails...")
         processEmails(emails, total_count, i+1, window)  
     return 
 
